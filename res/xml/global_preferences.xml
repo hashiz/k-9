@@ -358,6 +358,24 @@
     </PreferenceScreen>
 
     <PreferenceScreen
+        android:title="@string/wappush_preferences"
+        android:key="wappush_preferences">
+
+        <CheckBoxPreference
+            android:persistent="false"
+            android:key="receive_mailnotify"
+            android:title="@string/receive_mailnotify_title"
+            android:summary="@string/receive_mailnotify_summary" />
+
+        <CheckBoxPreference
+            android:persistent="false"
+            android:key="receive_wappush"
+            android:title="@string/receive_wappush_title"
+            android:summary="@string/receive_wappush_summary" />
+
+    </PreferenceScreen>
+
+    <PreferenceScreen
         android:title="@string/debug_preferences"
         android:key="debug_preferences">
 

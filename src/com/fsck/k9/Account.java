@@ -226,6 +226,8 @@ public class Account implements BaseAccount {
     private ColorChip mFromMeReadColorChip;
     private ColorChip mCheckmarkChip;
 
+    private boolean mMailCheckAtMailNotify;
+    private boolean mMailCheckAtWapPush;
 
     /**
      * Indicates whether this account is enabled, i.e. ready for use, or not.
@@ -334,6 +336,9 @@ public class Account implements BaseAccount {
         mNotificationSetting.setRing(true);
         mNotificationSetting.setRingtone("content://settings/system/notification_sound");
         mNotificationSetting.setLedColor(mChipColor);
+
+        mMailCheckAtMailNotify = false;
+        mMailCheckAtWapPush = false;
 
         cacheChips();
     }
@@ -502,8 +507,10 @@ public class Account implements BaseAccount {
         mMarkMessageAsReadOnView = prefs.getBoolean(mUuid + ".markMessageAsReadOnView", true);
         mAlwaysShowCcBcc = prefs.getBoolean(mUuid + ".alwaysShowCcBcc", false);
 
-        cacheChips();
+        mMailCheckAtMailNotify = prefs.getBoolean(mUuid + ".mailCheckAtMailNotify", false);
+        mMailCheckAtWapPush = prefs.getBoolean(mUuid + ".mailCheckAtWapPush", false);
 
+        cacheChips();
     }
 
     protected synchronized void delete(Preferences preferences) {
@@ -587,6 +594,8 @@ public class Account implements BaseAccount {
         editor.remove(mUuid + ".hideMoveButtonsEnum");
         editor.remove(mUuid + ".markMessageAsReadOnView");
         editor.remove(mUuid + ".alwaysShowCcBcc");
+        editor.remove(mUuid + ".mailCheckAtMailNotify");
+        editor.remove(mUuid + ".mailCheckAtWapPush");
         for (String type : networkTypes) {
             editor.remove(mUuid + ".useCompression." + type);
         }
@@ -760,6 +769,9 @@ public class Account implements BaseAccount {
         editor.putString(mUuid + ".ringtone", mNotificationSetting.getRingtone());
         editor.putBoolean(mUuid + ".led", mNotificationSetting.isLed());
         editor.putInt(mUuid + ".ledColor", mNotificationSetting.getLedColor());
+
+        editor.putBoolean(mUuid + ".mailCheckAtMailNotify", mMailCheckAtMailNotify);
+        editor.putBoolean(mUuid + ".mailCheckAtWapPush", mMailCheckAtWapPush);
 
         for (String type : networkTypes) {
             Boolean useCompression = compressionMap.get(type);
@@ -1884,5 +1896,18 @@ public class Account implements BaseAccount {
         if (!K9.FOLDER_NONE.equals(folderName)) {
             search.and(Searchfield.FOLDER, folderName, Attribute.NOT_EQUALS);
         }
+    }
+
+    public boolean isMailCheckAtMailNotify() {
+        return mMailCheckAtMailNotify;
+    }
+    public void setMailCheckAtMailNotify(boolean val) {
+    	mMailCheckAtMailNotify = val;
+    }
+    public boolean isMailCheckAtWapPush() {
+        return mMailCheckAtWapPush;
+    }
+    public void setMailCheckAtWapPush(boolean val) {
+        mMailCheckAtWapPush = val;
     }
 }

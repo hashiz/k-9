@@ -94,9 +94,6 @@ public class Prefs extends K9PreferenceActivity {
     private static final String PREFERENCE_FOLDERLIST_WRAP_NAME = "folderlist_wrap_folder_name";
     private static final String PREFERENCE_SPLITVIEW_MODE = "splitview_mode";
 
-    private static final String PREFERENCE_RECEIVE_MAIL_NOTIFY = "receive_mailnotify";
-    private static final String PREFERENCE_RECEIVE_WAP_PUSH = "receive_wappush";
-
     private static final int ACTIVITY_CHOOSE_FOLDER = 1;
 
 
@@ -142,8 +139,6 @@ public class Prefs extends K9PreferenceActivity {
     private CheckBoxPreference mThreadedView;
     private ListPreference mSplitViewMode;
 
-    private CheckBoxPreference mReceiveMailNotify;
-    private CheckBoxPreference mReceiveWapPush;
 
     public static void actionPrefs(Context context) {
         Intent i = new Intent(context, Prefs.class);
@@ -407,12 +402,6 @@ public class Prefs extends K9PreferenceActivity {
         mSplitViewMode = (ListPreference) findPreference(PREFERENCE_SPLITVIEW_MODE);
         initListPreference(mSplitViewMode, K9.getSplitViewMode().name(),
                 mSplitViewMode.getEntries(), mSplitViewMode.getEntryValues());
-
-        mReceiveMailNotify = (CheckBoxPreference)findPreference(PREFERENCE_RECEIVE_MAIL_NOTIFY);
-        mReceiveMailNotify.setChecked(K9.receiveMailNotify());
-
-        mReceiveWapPush = (CheckBoxPreference)findPreference(PREFERENCE_RECEIVE_WAP_PUSH);
-        mReceiveWapPush.setChecked(K9.receiveWapPush());
     }
 
     private static String themeIdToName(K9.Theme theme) {
@@ -496,9 +485,6 @@ public class Prefs extends K9PreferenceActivity {
         }
         K9.DEBUG = mDebugLogging.isChecked();
         K9.DEBUG_SENSITIVE = mSensitiveLogging.isChecked();
-
-        K9.setReceiveMailNotify(mReceiveMailNotify.isChecked());
-        K9.setReceiveWapPush(mReceiveWapPush.isChecked());
 
         Editor editor = preferences.edit();
         K9.save(editor);

@@ -261,6 +261,9 @@ public class K9 extends Application {
     private static boolean sThreadedViewEnabled = true;
     private static SplitViewMode sSplitViewMode = SplitViewMode.NEVER;
 
+    private static boolean mReceiveMailNotify = false;
+    private static boolean mReceiveWapPush = false;
+
     /**
      * @see #areDatabasesUpToDate()
      */
@@ -538,6 +541,9 @@ public class K9 extends Application {
         editor.putBoolean("threadedView", sThreadedViewEnabled);
         editor.putString("splitViewMode", sSplitViewMode.name());
         fontSizes.save(editor);
+
+        editor.putBoolean("receiveMailNotify", mReceiveMailNotify);
+        editor.putBoolean("receiveWapPush", mReceiveWapPush);
     }
 
     @Override
@@ -773,6 +779,9 @@ public class K9 extends Application {
         themeValue = sprefs.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
         K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
         K9.setUseFixedMessageViewTheme(sprefs.getBoolean("fixedMessageViewTheme", true));
+
+        mReceiveMailNotify = sprefs.getBoolean("receiveMailNotify", mReceiveMailNotify);
+        mReceiveWapPush = sprefs.getBoolean("receiveWapPush", mReceiveWapPush);
     }
 
     private void maybeSetupStrictMode() {
@@ -1300,6 +1309,20 @@ public class K9 extends Application {
 
     public static void setShowContactPicture(boolean show) {
         sShowContactPicture = show;
+    }
+
+    public static boolean receiveMailNotify() {
+        return mReceiveMailNotify;
+    }
+    public static void setReceiveMailNotify(final boolean state) {
+    	mReceiveMailNotify = state;
+    }
+
+    public static boolean receiveWapPush() {
+        return mReceiveWapPush;
+    }
+    public static void setReceiveWapPush(final boolean state) {
+    	mReceiveWapPush = state;
     }
 
     /**

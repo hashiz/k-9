@@ -54,6 +54,7 @@
                 android:description="@string/delete_messages_desc"/>
     <uses-permission android:name="com.fsck.k9.permission.DELETE_MESSAGES"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+    <uses-permission android:name="android.permission.RECEIVE_WAP_PUSH"/>
     <application
         android:icon="@drawable/icon"
         android:label="@string/app_name"
@@ -426,9 +427,15 @@ otherwise it would make K-9 start at the wrong time
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-        <receiver android:name=".service.SMSNotifyReceiver" android:enabled="true">
+        <receiver android:name="com.fsck.k9.service.wappush.MailNotifyReceiver" android:enabled="true">
             <intent-filter>
                 <action android:name="net.assemble.emailnotify.MAIL_PUSH_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.fsck.k9.service.wappush.WapPushReceiver" android:enabled="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
+                <data android:mimeType="application/vnd.wap.slc" />
             </intent-filter>
         </receiver>
         <activity

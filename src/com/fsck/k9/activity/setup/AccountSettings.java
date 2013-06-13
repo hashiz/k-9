@@ -120,6 +120,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_TRASH_FOLDER = "trash_folder";
     private static final String PREFERENCE_ALWAYS_SHOW_CC_BCC = "always_show_cc_bcc";
 
+    private static final String PREFERENCE_MAILCHECK_AT_MAINOTIFY = "mailcheck_at_mailnotify";
+    private static final String PREFERENCE_MAILCHECK_AT_WAPPUSH = "mailcheck_at_wappush";
 
     private Account mAccount;
     private boolean mIsMoveCapable = false;
@@ -192,6 +194,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mTrashFolder;
     private CheckBoxPreference mAlwaysShowCcBcc;
 
+    private CheckBoxPreference mMailCheckAtMailNotify;
+    private CheckBoxPreference mMailCheckAtWapPush;
 
     public static void actionSettings(Context context, Account account) {
         Intent i = new Intent(context, AccountSettings.class);
@@ -719,6 +723,10 @@ public class AccountSettings extends K9PreferenceActivity {
             mCryptoMenu.setEnabled(false);
             mCryptoMenu.setSummary(R.string.account_settings_crypto_apg_not_installed);
         }
+        mMailCheckAtMailNotify = (CheckBoxPreference)findPreference(PREFERENCE_MAILCHECK_AT_MAINOTIFY);
+        mMailCheckAtMailNotify.setChecked(mAccount.isMailCheckAtMailNotify());
+        mMailCheckAtWapPush = (CheckBoxPreference)findPreference(PREFERENCE_MAILCHECK_AT_WAPPUSH);
+        mMailCheckAtWapPush.setChecked(mAccount.isMailCheckAtWapPush());
     }
 
     private void removeListEntry(ListPreference listPreference, String remove) {
@@ -839,6 +847,9 @@ public class AccountSettings extends K9PreferenceActivity {
 
         mAccount.setShowPictures(Account.ShowPictures.valueOf(mAccountShowPictures.getValue()));
 
+        mAccount.setMailCheckAtMailNotify(mMailCheckAtMailNotify.isChecked());
+        mAccount.setMailCheckAtWapPush(mMailCheckAtWapPush.isChecked());
+        
         //IMAP specific stuff
         if (mIsPushCapable) {
             boolean needsPushRestart = mAccount.setFolderPushMode(Account.FolderMode.valueOf(mPushMode.getValue()));
