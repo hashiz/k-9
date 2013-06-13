@@ -426,6 +426,11 @@ otherwise it would make K-9 start at the wrong time
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
+        <receiver android:name=".service.SMSNotifyReceiver" android:enabled="true">
+            <intent-filter>
+                <action android:name="net.assemble.emailnotify.MAIL_PUSH_RECEIVED"/>
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".activity.UpgradeDatabases"
             android:label="@string/upgrade_databases_title">
