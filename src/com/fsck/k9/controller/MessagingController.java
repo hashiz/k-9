@@ -3117,7 +3117,6 @@ public class MessagingController implements Runnable {
                         return;
                     }
 
-                    markMessageAsReadOnView(account, message);
 
                     for (MessagingListener l : getListeners(listener)) {
                         l.loadMessageForViewHeadersAvailable(account, folder, uid, message);
@@ -3138,6 +3137,7 @@ public class MessagingController implements Runnable {
                     for (MessagingListener l : getListeners(listener)) {
                         l.loadMessageForViewFinished(account, folder, uid, message);
                     }
+                    markMessageAsReadOnView(account, message);
 
                 } catch (Exception e) {
                     for (MessagingListener l : getListeners(listener)) {
@@ -3168,8 +3168,7 @@ public class MessagingController implements Runnable {
 
         if (account.isMarkMessageAsReadOnView() && !message.isSet(Flag.SEEN)) {
             List<Long> messageIds = Collections.singletonList(message.getId());
-            setFlagInCache(account, messageIds, Flag.SEEN, true);
-            setFlagSynchronous(account, messageIds, Flag.SEEN, true, false);
+            setFlag(account, messageIds, Flag.SEEN, true);
 
             ((LocalMessage) message).setFlagInternal(Flag.SEEN, true);
         }
