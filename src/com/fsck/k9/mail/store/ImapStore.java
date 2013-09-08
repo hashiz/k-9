@@ -566,6 +566,12 @@ public class ImapStore extends Store {
             if (ImapResponseParser.equalsIgnoreCase(response.get(0), commandResponse)) {
                 boolean includeFolder = true;
 
+                if (response.size() > 4 || !(response.getObject(3) instanceof String)) {
+                    Log.w(K9.LOG_TAG, "Skipping incorrectly parsed " + commandResponse +
+                            " reply: " + response);
+                    continue;
+                }
+
                 String decodedFolderName;
                 try {
                     decodedFolderName = decodeFolderName(response.getString(3));
@@ -814,7 +820,7 @@ public class ImapStore extends Store {
         protected volatile int mMessageCount = -1;
         protected volatile long uidNext = -1L;
         protected volatile ImapConnection mConnection;
-        private OpenMode mMode;
+        private int mMode;
         private volatile boolean mExists;
         private ImapStore store = null;
         Map<Long, String> msgSeqUidMap = new ConcurrentHashMap<Long, String>();
@@ -863,7 +869,7 @@ public class ImapStore extends Store {
         }
 
         @Override
-        public void open(OpenMode mode) throws MessagingException {
+        public void open(int mode) throws MessagingException {
             internalOpen(mode);
 
             if (mMessageCount == -1) {
@@ -872,7 +878,7 @@ public class ImapStore extends Store {
             }
         }
 
-        public List<ImapResponse> internalOpen(OpenMode mode) throws MessagingException {
+        public List<ImapResponse> internalOpen(int mode) throws MessagingException {
             if (isOpen() && mMode == mode) {
                 // Make sure the connection is valid. If it's not we'll close it down and continue
                 // on to get a new one.
@@ -898,7 +904,7 @@ public class ImapStore extends Store {
             // 2 OK [READ-WRITE] Select completed.
             try {
                 msgSeqUidMap.clear();
-                String command = String.format("%s %s", mode == OpenMode.READ_WRITE ? "SELECT"
+                String command = String.format("%s %s", mode == OPEN_MODE_RW ? "SELECT"
                         : "EXAMINE", encodeString(encodeFolderName(getPrefixedName())));
 
                 List<ImapResponse> responses = executeSimpleCommand(command);
@@ -932,9 +938,9 @@ public class ImapStore extends Store {
                                 if (response.mTag != null) {
 
                                     if ("READ-ONLY".equalsIgnoreCase(key)) {
-                                        mMode = OpenMode.READ_ONLY;
+                                        mMode = OPEN_MODE_RO;
                                     } else if ("READ-WRITE".equalsIgnoreCase(key)) {
-                                        mMode = OpenMode.READ_WRITE;
+                                        mMode = OPEN_MODE_RW;
                                     }
                                 }
                             }
@@ -984,7 +990,7 @@ public class ImapStore extends Store {
         }
 
         @Override
-        public OpenMode getMode() {
+        public int getMode() {
             return mMode;
         }
 
@@ -1647,9 +1653,12 @@ public class ImapStore extends Store {
                                 String bodyString = (String)literal;
                                 InputStream bodyStream = new ByteArrayInputStream(bodyString.getBytes());
 
-                                String contentTransferEncoding = part.getHeader(
-                                                                     MimeHeader.HEADER_CONTENT_TRANSFER_ENCODING)[0];
-                                part.setBody(MimeUtility.decodeBody(bodyStream, contentTransferEncoding));
+                                String contentTransferEncoding = part
+                                        .getHeader(MimeHeader.HEADER_CONTENT_TRANSFER_ENCODING)[0];
+                                String contentType = part
+                                        .getHeader(MimeHeader.HEADER_CONTENT_TYPE)[0];
+                                part.setBody(MimeUtility.decodeBody(bodyStream,
+                                        contentTransferEncoding, contentType));
                             } else {
                                 // This shouldn't happen
                                 throw new MessagingException("Got FETCH response with bogus parameters");
@@ -1994,7 +2003,7 @@ public class ImapStore extends Store {
          */
         @Override
         public Map<String, String> appendMessages(Message[] messages) throws MessagingException {
-            open(OpenMode.READ_WRITE);
+            open(OPEN_MODE_RW);
             checkOpen();
             try {
                 Map<String, String> uidMap = new HashMap<String, String>();
@@ -2107,7 +2116,7 @@ public class ImapStore extends Store {
 
         @Override
         public void expunge() throws MessagingException {
-            open(OpenMode.READ_WRITE);
+            open(OPEN_MODE_RW);
             checkOpen();
             try {
                 executeSimpleCommand("EXPUNGE");
@@ -2140,7 +2149,7 @@ public class ImapStore extends Store {
         @Override
         public void setFlags(Flag[] flags, boolean value)
         throws MessagingException {
-            open(OpenMode.READ_WRITE);
+            open(OPEN_MODE_RW);
             checkOpen();
 
 
@@ -2175,7 +2184,7 @@ public class ImapStore extends Store {
         @Override
         public void setFlags(Message[] messages, Flag[] flags, boolean value)
         throws MessagingException {
-            open(OpenMode.READ_WRITE);
+            open(OPEN_MODE_RW);
             checkOpen();
             String[] uids = new String[messages.length];
             for (int i = 0, count = messages.length; i < count; i++) {
@@ -2327,7 +2336,7 @@ public class ImapStore extends Store {
 
             // Execute the search
             try {
-                open(OpenMode.READ_ONLY);
+                open(OPEN_MODE_RO);
                 checkOpen();
 
                 mInSearch = true;
@@ -2975,7 +2984,7 @@ public class ImapStore extends Store {
                                 Log.e(K9.LOG_TAG, "Unable to get oldUidNext for " + getLogId(), e);
                             }
                             ImapConnection oldConnection = mConnection;
-                            internalOpen(OpenMode.READ_ONLY);
+                            internalOpen(OPEN_MODE_RO);
                             ImapConnection conn = mConnection;
                             if (conn == null) {
                                 receiver.pushError("Could not establish connection for IDLE", null);
@@ -3541,10 +3550,13 @@ public class ImapStore extends Store {
                     ImapResponseParser.equalsIgnoreCase(response.get(1), "FETCH")) {
                 //TODO: check for correct UID
 
-                String contentTransferEncoding = mPart.getHeader(
-                                                     MimeHeader.HEADER_CONTENT_TRANSFER_ENCODING)[0];
+                String contentTransferEncoding = mPart
+                        .getHeader(MimeHeader.HEADER_CONTENT_TRANSFER_ENCODING)[0];
+                String contentType = mPart
+                        .getHeader(MimeHeader.HEADER_CONTENT_TYPE)[0];
 
-                return MimeUtility.decodeBody(literal, contentTransferEncoding);
+                return MimeUtility.decodeBody(literal, contentTransferEncoding,
+                        contentType);
             }
             return null;
         }
