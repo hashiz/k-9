@@ -224,6 +224,7 @@ public class K9 extends Application {
     }
 
     private static boolean mMessageListCheckboxes = true;
+    private static boolean mMessageListStars = true;
     private static int mMessageListPreviewLines = 2;
 
     private static boolean mShowCorrespondentNames = true;
@@ -260,6 +261,14 @@ public class K9 extends Application {
     private static boolean sUseBackgroundAsUnreadIndicator = true;
     private static boolean sThreadedViewEnabled = true;
     private static SplitViewMode sSplitViewMode = SplitViewMode.NEVER;
+    private static boolean sColorizeMissingContactPictures = true;
+
+    private static boolean sMessageViewArchiveActionVisible = false;
+    private static boolean sMessageViewDeleteActionVisible = true;
+    private static boolean sMessageViewMoveActionVisible = false;
+    private static boolean sMessageViewCopyActionVisible = false;
+    private static boolean sMessageViewSpamActionVisible = false;
+
 
     /**
      * @see #areDatabasesUpToDate()
@@ -503,6 +512,7 @@ public class K9 extends Application {
         editor.putBoolean("countSearchMessages", mCountSearchMessages);
         editor.putBoolean("messageListSenderAboveSubject", mMessageListSenderAboveSubject);
         editor.putBoolean("hideSpecialAccounts", mHideSpecialAccounts);
+        editor.putBoolean("messageListStars", mMessageListStars);
         editor.putInt("messageListPreviewLines", mMessageListPreviewLines);
         editor.putBoolean("messageListCheckboxes", mMessageListCheckboxes);
         editor.putBoolean("showCorrespondentNames", mShowCorrespondentNames);
@@ -537,12 +547,22 @@ public class K9 extends Application {
         editor.putBoolean("useBackgroundAsUnreadIndicator", sUseBackgroundAsUnreadIndicator);
         editor.putBoolean("threadedView", sThreadedViewEnabled);
         editor.putString("splitViewMode", sSplitViewMode.name());
+        editor.putBoolean("colorizeMissingContactPictures", sColorizeMissingContactPictures);
+
+        editor.putBoolean("messageViewArchiveActionVisible", sMessageViewArchiveActionVisible);
+        editor.putBoolean("messageViewDeleteActionVisible", sMessageViewDeleteActionVisible);
+        editor.putBoolean("messageViewMoveActionVisible", sMessageViewMoveActionVisible);
+        editor.putBoolean("messageViewCopyActionVisible", sMessageViewCopyActionVisible);
+        editor.putBoolean("messageViewSpamActionVisible", sMessageViewSpamActionVisible);
+
         fontSizes.save(editor);
     }
 
     @Override
     public void onCreate() {
         maybeSetupStrictMode();
+        PRNGFixes.apply();
+
         super.onCreate();
         app = this;
 
@@ -689,7 +709,8 @@ public class K9 extends Application {
         mCountSearchMessages = sprefs.getBoolean("countSearchMessages", true);
         mHideSpecialAccounts = sprefs.getBoolean("hideSpecialAccounts", false);
         mMessageListSenderAboveSubject = sprefs.getBoolean("messageListSenderAboveSubject", false);
-        mMessageListCheckboxes = sprefs.getBoolean("messageListCheckboxes", true);
+        mMessageListCheckboxes = sprefs.getBoolean("messageListCheckboxes", false);
+        mMessageListStars = sprefs.getBoolean("messageListStars", true);
         mMessageListPreviewLines = sprefs.getInt("messageListPreviewLines", 2);
 
         mMobileOptimizedLayout = sprefs.getBoolean("mobileOptimizedLayout", false);
@@ -756,6 +777,15 @@ public class K9 extends Application {
         } catch (Exception e) {
             setBackgroundOps(BACKGROUND_OPS.WHEN_CHECKED);
         }
+
+        sColorizeMissingContactPictures = sprefs.getBoolean("colorizeMissingContactPictures", true);
+
+        sMessageViewArchiveActionVisible = sprefs.getBoolean("messageViewArchiveActionVisible", false);
+        sMessageViewDeleteActionVisible = sprefs.getBoolean("messageViewDeleteActionVisible", true);
+        sMessageViewMoveActionVisible = sprefs.getBoolean("messageViewMoveActionVisible", false);
+        sMessageViewCopyActionVisible = sprefs.getBoolean("messageViewCopyActionVisible", false);
+        sMessageViewSpamActionVisible = sprefs.getBoolean("messageViewSpamActionVisible", false);
+
 
         K9.setK9Language(sprefs.getString("language", ""));
 
@@ -1044,13 +1074,20 @@ public class K9 extends Application {
         mMessageListPreviewLines = lines;
     }
 
-
     public static boolean messageListCheckboxes() {
         return mMessageListCheckboxes;
     }
 
     public static void setMessageListCheckboxes(boolean checkboxes) {
         mMessageListCheckboxes = checkboxes;
+    }
+
+    public static boolean messageListStars() {
+        return mMessageListStars;
+    }
+
+    public static void setMessageListStars(boolean stars) {
+        mMessageListStars = stars;
     }
 
     public static boolean showCorrespondentNames() {
@@ -1300,6 +1337,54 @@ public class K9 extends Application {
 
     public static void setShowContactPicture(boolean show) {
         sShowContactPicture = show;
+    }
+
+    public static boolean isColorizeMissingContactPictures() {
+        return sColorizeMissingContactPictures;
+    }
+
+    public static void setColorizeMissingContactPictures(boolean enabled) {
+        sColorizeMissingContactPictures = enabled;
+    }
+
+    public static boolean isMessageViewArchiveActionVisible() {
+        return sMessageViewArchiveActionVisible;
+    }
+
+    public static void setMessageViewArchiveActionVisible(boolean visible) {
+        sMessageViewArchiveActionVisible = visible;
+    }
+
+    public static boolean isMessageViewDeleteActionVisible() {
+        return sMessageViewDeleteActionVisible;
+    }
+
+    public static void setMessageViewDeleteActionVisible(boolean visible) {
+        sMessageViewDeleteActionVisible = visible;
+    }
+
+    public static boolean isMessageViewMoveActionVisible() {
+        return sMessageViewMoveActionVisible;
+    }
+
+    public static void setMessageViewMoveActionVisible(boolean visible) {
+        sMessageViewMoveActionVisible = visible;
+    }
+
+    public static boolean isMessageViewCopyActionVisible() {
+        return sMessageViewCopyActionVisible;
+    }
+
+    public static void setMessageViewCopyActionVisible(boolean visible) {
+        sMessageViewCopyActionVisible = visible;
+    }
+
+    public static boolean isMessageViewSpamActionVisible() {
+        return sMessageViewSpamActionVisible;
+    }
+
+    public static void setMessageViewSpamActionVisible(boolean visible) {
+        sMessageViewSpamActionVisible = visible;
     }
 
     /**

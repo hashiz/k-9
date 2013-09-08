@@ -128,6 +128,8 @@ Wszelkie zgłoszenia usterek, zapytania oraz nowe pomysły prosimy przesyłać z
     <string name="cancel_action">Anuluj</string>
     <string name="send_action">Wyślij</string>
     <string name="send_again_action">Prześlij ponownie</string>
+    <string name="select_action">Zaznacz</string>
+    <string name="deselect_action">Odznacz</string>
     <string name="reply_action">Odpowiedz</string>
     <string name="reply_all_action">Odpowiedz wszystkim</string>
     <string name="delete_action">Usuń</string>
@@ -135,7 +137,7 @@ Wszelkie zgłoszenia usterek, zapytania oraz nowe pomysły prosimy przesyłać z
     <string name="spam_action">Spam</string>
     <string name="forward_action">Prześlij dalej</string>
     <string name="move_action">Przenieś</string>
-    <string name="single_message_options_action">Wyślij</string>
+    <string name="single_message_options_action">Wyślij…</string>
     <string name="refile_action">Operacje…</string>
     <string name="continue_action">Kontynuuj</string>
     <string name="back_action">Cofnij</string>
@@ -216,7 +218,7 @@ Wszelkie zgłoszenia usterek, zapytania oraz nowe pomysły prosimy przesyłać z
     <string name="notification_additional_messages">+ <xliff:g id="additional_messages">%d</xliff:g> więcej na <xliff:g id="account">%s</xliff:g></string>
 
     <string name="notification_action_reply">Odpowiedz</string>
-    <string name="notification_action_read">Oznacz jako przeczytane</string>
+    <string name="notification_action_mark_as_read">Oznacz jako przeczytane</string>
     <string name="notification_action_delete">Usuń</string>
     <string name="notification_certificate_error_title">Błąd certyfikatu dla <xliff:g id="account">%s</xliff:g></string>
     <string name="notification_certificate_error_text">Sprawdź ustawienia serwera</string>
@@ -303,6 +305,8 @@ Wszelkie zgłoszenia usterek, zapytania oraz nowe pomysły prosimy przesyłać z
     <string name="message_discarded_toast">Wiadomość usunięta</string>
     <string name="message_saved_toast">Wiadomość zapisana jako szkic</string>
 
+    <string name="global_settings_flag_label">Oznaczaj gwiazdkami</string>
+    <string name="global_settings_flag_summary">Gwiazka wskazuje oznakowane wiadomości</string>
     <string name="global_settings_checkbox_label">Zaznaczanie wielu</string>
     <string name="global_settings_checkbox_summary">Opcja zaznaczania wielu wiadomości dostępna zawsze w trybie wielokrotnego wyboru</string>
     <string name="global_settings_preview_lines_label">Podglądaj linie</string>
@@ -395,10 +399,10 @@ Wszelkie zgłoszenia usterek, zapytania oraz nowe pomysły prosimy przesyłać z
     <string name="account_setup_incoming_security_label">Zabezpieczenia</string>
     <string name="account_setup_incoming_auth_type_label">Rodzaj uwierzytelnienia</string>
     <string name="account_setup_incoming_security_none_label">Brak</string>
-    <string name="account_setup_incoming_security_ssl_optional_label">SSL (jeśli dostępne)</string>
-    <string name="account_setup_incoming_security_ssl_label">SSL (zawsze)</string>
-    <string name="account_setup_incoming_security_tls_optional_label">TLS (jeśli dostępne)</string>
-    <string name="account_setup_incoming_security_tls_label">TLS (zawsze)</string>
+    <string name="account_setup_incoming_security_ssl_optional_label">SSL/TLS (jeśli dostępne)</string>
+    <string name="account_setup_incoming_security_ssl_label">SSL/TLS (zawsze)</string>
+    <string name="account_setup_incoming_security_tls_optional_label">STARTTLS (jeśli dostępne)</string>
+    <string name="account_setup_incoming_security_tls_label">STARTTLS (zawsze)</string>
 
     <string name="account_setup_incoming_delete_policy_label">Gdy skasuję wiadomość</string>
     <string name="account_setup_incoming_delete_policy_never_label">Nie usuwaj z serwera</string>
@@ -1147,4 +1151,9 @@ Wszelkie zgłoszenia usterek, zapytania oraz nowe pomysły prosimy przesyłać z
     <string name="preposition_for_date"><xliff:g id="date">%s</xliff:g></string>
 
     <string name="mark_all_as_read">Oznacz wszystkie jako przeczytane</string>
+
+    <!-- NEW: <string name="global_settings_colorize_missing_contact_pictures">Colorize missing contact pictures</string>-->
+
+    <!-- NEW: <string name="global_settings_messageview_visible_refile_actions_title">Visisble message actions</string>-->
+    <!-- NEW: <string name="global_settings_messageview_visible_refile_actions_summary">Show selected actions in the message view menu</string>-->
 </resources>
