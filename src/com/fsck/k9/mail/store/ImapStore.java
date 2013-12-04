@@ -96,6 +96,8 @@ import com.fsck.k9.mail.store.ImapResponseParser.ImapList;
 import com.fsck.k9.mail.store.ImapResponseParser.ImapResponse;
 import com.fsck.k9.mail.store.imap.ImapUtility;
 import com.fsck.k9.mail.transport.imap.ImapSettings;
+import com.fsck.k9.net.ssl.TrustManagerFactory;
+import com.fsck.k9.net.ssl.TrustedSocketFactory;
 import com.jcraft.jzlib.JZlib;
 import com.jcraft.jzlib.ZOutputStream;
 
@@ -1917,7 +1919,7 @@ public class ImapStore extends Store {
                      * of them.
                      */
                     for (int i = 0, count = bodyParams.size(); i < count; i += 2) {
-                        contentType.append(String.format(";\n %s=\"%s\"",
+                        contentType.append(String.format(";\r\n %s=\"%s\"",
                                            bodyParams.getString(i),
                                            bodyParams.getString(i + 1)));
                     }
@@ -1952,7 +1954,7 @@ public class ImapStore extends Store {
                          * about the attachment out.
                          */
                         for (int i = 0, count = bodyDispositionParams.size(); i < count; i += 2) {
-                            contentDisposition.append(String.format(";\n %s=\"%s\"",
+                            contentDisposition.append(String.format(";\r\n %s=\"%s\"",
                                                       bodyDispositionParams.getString(i).toLowerCase(Locale.US),
                                                       bodyDispositionParams.getString(i + 1)));
                         }
@@ -1960,7 +1962,7 @@ public class ImapStore extends Store {
                 }
 
                 if (MimeUtility.getHeaderParameter(contentDisposition.toString(), "size") == null) {
-                    contentDisposition.append(String.format(";\n size=%d", size));
+                    contentDisposition.append(String.format(";\r\n size=%d", size));
                 }
 
                 /*
@@ -2446,10 +2448,13 @@ public class ImapStore extends Store {
                                 connectionSecurity == CONNECTION_SECURITY_SSL_OPTIONAL) {
                             SSLContext sslContext = SSLContext.getInstance("TLS");
                             boolean secure = connectionSecurity == CONNECTION_SECURITY_SSL_REQUIRED;
-                            sslContext.init(null, new TrustManager[] {
-                                                TrustManagerFactory.get(mSettings.getHost(), secure)
-                                            }, new SecureRandom());
-                            mSocket = sslContext.getSocketFactory().createSocket();
+                            sslContext
+                                    .init(null,
+                                            new TrustManager[] { TrustManagerFactory.get(
+                                                    mSettings.getHost(),
+                                                    mSettings.getPort(), secure) },
+                                            new SecureRandom());
+                            mSocket = TrustedSocketFactory.createSocket(sslContext);
                         } else {
                             mSocket = new Socket();
                         }
@@ -2501,11 +2506,13 @@ public class ImapStore extends Store {
 
                         SSLContext sslContext = SSLContext.getInstance("TLS");
                         boolean secure = mSettings.getConnectionSecurity() == CONNECTION_SECURITY_TLS_REQUIRED;
-                        sslContext.init(null, new TrustManager[] {
-                                            TrustManagerFactory.get(mSettings.getHost(), secure)
-                                        }, new SecureRandom());
-                        mSocket = sslContext.getSocketFactory().createSocket(mSocket, mSettings.getHost(), mSettings.getPort(),
-                                  true);
+                        sslContext.init(null,
+                                new TrustManager[] { TrustManagerFactory.get(
+                                        mSettings.getHost(),
+                                        mSettings.getPort(), secure) },
+                                new SecureRandom());
+                        mSocket = TrustedSocketFactory.createSocket(sslContext, mSocket,
+                                mSettings.getHost(), mSettings.getPort(), true);
                         mSocket.setSoTimeout(Store.SOCKET_READ_TIMEOUT);
                         mIn = new PeekableInputStream(new BufferedInputStream(mSocket
                                                       .getInputStream(), 1024));
