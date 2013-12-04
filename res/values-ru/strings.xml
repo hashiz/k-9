@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Translation of RU version (06.07.2013): Igor Nedoboy (k9russian<AT>gmail<DOT>com) -->
+<!-- Translation of RU version (2013): Igor Nedoboy (k9russian<AT>gmail<DOT>com) -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- === App-specific strings ============================================================= -->
 
@@ -77,7 +77,7 @@ K-9 Mail — почтовый клиент для Android.
     <!-- === General strings ================================================================== -->
 
     <string name="app_authors_fmt">Авторы: <xliff:g id="app_authors">%s</xliff:g></string>
-    <string name="app_revision_fmt">Новое в версии: <xliff:g id="app_revision_url">%s</xliff:g></string>
+    <string name="app_revision_fmt">Изменения: <xliff:g id="app_revision_url">%s</xliff:g></string>
     <string name="app_libraries">Сторонние компоненты: <xliff:g id="app_libraries_list">%s</xliff:g></string>
     <string name="app_emoji_icons">Значки настроения: <xliff:g id="app_emoji_icons_link">%s</xliff:g></string>
 
@@ -200,7 +200,7 @@ K-9 Mail — почтовый клиент для Android.
 
     <string name="compacting_account">Сжатие ящика \"<xliff:g id="account">%s</xliff:g>\"</string>
     <string name="clearing_account">Очистка ящика \"<xliff:g id="account">%s</xliff:g>\"</string>
-    <string name="recreating_account">Пересоздание ящика\"<xliff:g id="account">%s</xliff:g>\"</string>
+    <string name="recreating_account">Пересоздание ящика \"<xliff:g id="account">%s</xliff:g>\"</string>
 
     <string name="notification_new_title">Новая почта</string>
     <string name="notification_new_messages_title"><xliff:g id="new_message_count">%d</xliff:g> новых</string>
@@ -213,9 +213,9 @@ K-9 Mail — почтовый клиент для Android.
     <string name="notification_certificate_error_title">Ошибка сертификата <xliff:g id="account">%s</xliff:g></string>
     <string name="notification_certificate_error_text">Проверьте настройки сервера</string>
 
-    <string name="notification_bg_sync_ticker">Проверка: <xliff:g id="account">%s</xliff:g>:<xliff:g id="folder">%s</xliff:g></string>
+    <string name="notification_bg_sync_ticker">Проверка — <xliff:g id="account">%s</xliff:g>:<xliff:g id="folder">%s</xliff:g></string>
     <string name="notification_bg_sync_title">Проверка почты</string>
-    <string name="notification_bg_send_ticker">Отправка: <xliff:g id="account">%s</xliff:g></string>
+    <string name="notification_bg_send_ticker">Отправка — <xliff:g id="account">%s</xliff:g></string>
     <string name="notification_bg_send_title">Отправка почты</string>
     <string name="notification_bg_title_separator">:</string>
 
@@ -258,7 +258,7 @@ K-9 Mail — почтовый клиент для Android.
     <string name="message_compose_quote_header_from">От:</string>
     <string name="message_compose_quote_header_to">Кому:</string>
     <string name="message_compose_quote_header_cc">Копия:</string>
-    <string name="message_compose_reply_header_fmt"><xliff:g id="sender">%s</xliff:g> пишет:\n</string>
+    <string name="message_compose_reply_header_fmt"><xliff:g id="sender">%s</xliff:g> пишет:</string>
     <string name="message_compose_error_no_recipients">Укажите адресата</string>
     <string name="error_contact_address_not_found">Контакт не содержит сведений о email</string>
     <string name="message_compose_attachments_skipped_toast">Некоторые вложения не были загружены и не могут быть отправлены</string>
@@ -751,10 +751,6 @@ K-9 Mail — почтовый клиент для Android.
 
     <string name="account_clear_dlg_title">Очистка ящика</string>
 
-    <string name="provider_note_live">Доступ по POP-протоколу доступен только для \"Plus\"-аккаунтов.
-        Если подключение с правильными настройками не удаётся, требуется
-        переход на версию \"Plus\". Воспользуйтесь мобильной версией
-        Yahoo! Mail или зайдите в аккаунт через браузер</string>
     <string name="provider_note_yahoojp">Убедитесь, что разрешён доступ по IMAP или POP3 в настройках аккаунта Yahoo</string>
     <string name="provider_note_auonejp">Убедитесь, что разрешён доступ по IMAP или POP3 в настройках аккаунта au one</string>
     <string name="provider_note_naver">Убедитесь, что разрешён доступ по IMAP или POP3 в настройках аккаунта Naver</string>
@@ -1144,7 +1140,13 @@ K-9 Mail — почтовый клиент для Android.
     <string name="mark_all_as_read">Прочитаны все</string>
 
     <string name="global_settings_colorize_missing_contact_pictures_label">Цветные места для фото</string>
+    <string name="global_settings_colorize_missing_contact_pictures_summary">Инициалы контактов на цветном фоне при отсутствии фото</string>
 
     <string name="global_settings_messageview_visible_refile_actions_title">Действия для сообщения</string>
     <string name="global_settings_messageview_visible_refile_actions_summary">Видимость действий для открытого сообщения</string>
+
+    <string name="loading_attachment">Загрузка вложений…</string>
+    <string name="fetching_attachment_dialog_title_send">Отправка сообщения</string>
+    <string name="fetching_attachment_dialog_title_save">Сохранение черновика</string>
+    <string name="fetching_attachment_dialog_message">Получение вложений…</string>
 </resources>
