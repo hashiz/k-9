@@ -196,12 +196,7 @@ Hibajelentéseivel hozzájárul az újabb verziók tökéletesítéséhez, kérd
     <string name="abbrev_kilobytes">KB</string>
     <string name="abbrev_bytes">B</string>
 
-    <string name="account_size_changed">
-    \"<xliff:g id="account">%s</xliff:g>\" fiók tömörítése
-    <xliff:g id="oldSize">%s</xliff:g>
-    helyett
-    <xliff:g id="newSize">%s</xliff:g>
-    </string>
+    <string name="account_size_changed">\"<xliff:g id="account">%s</xliff:g>\" fiók tömörítése <xliff:g id="oldSize">%s</xliff:g> helyett <xliff:g id="newSize">%s</xliff:g></string>
 
     <string name="compacting_account">Fiók tömörítése \"<xliff:g id="account">%s</xliff:g>\"</string>
     <string name="clearing_account">Fiók takarítása \"<xliff:g id="account">%s</xliff:g>\"</string>
@@ -985,7 +980,7 @@ Hibajelentéseivel hozzájárul az újabb verziók tökéletesítéséhez, kérd
       (1) http://developer.android.com/guide/topics/resources/string-resource.html#Plurals
 
     -->
-    <plurals name="dialog_confirm_delete_message">
+    <plurals name="dialog_confirm_delete_messages">
         <item quantity="one">Biztos hogy törli ezt a levelet?</item>
         <item quantity="other">Biztos hogy törli ezt: <xliff:g id="message_count">%1$d</xliff:g> ?</item>
     </plurals>
@@ -1022,7 +1017,7 @@ Hibajelentéseivel hozzájárul az újabb verziók tökéletesítéséhez, kérd
     <string name="settings_export_success">Exportált beállítások mentve ide: <xliff:g id="filename">%s</xliff:g></string>
     <string name="settings_import_global_settings_success">Az általános beállítások importálva innen: <xliff:g id="filename">%s</xliff:g></string>
     <string name="settings_import_success">A(z) <xliff:g id="accounts">%s</xliff:g> importálva innen: <xliff:g id="filename">%s</xliff:g></string>
-    <plurals name="settings_import_success">
+    <plurals name="settings_import_accounts">
         <item quantity="one">1 fiók</item>
         <item quantity="other"><xliff:g id="numAccounts">%s</xliff:g> fiók</item>
     </plurals>

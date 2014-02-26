@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.util.Rfc822Tokenizer;
 import android.util.AttributeSet;
@@ -92,6 +94,8 @@ import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleHtmlSerializer;
 import org.htmlcleaner.TagNode;
+
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -915,8 +919,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         final String action = intent.getAction();
 
         if (Intent.ACTION_VIEW.equals(action) || Intent.ACTION_SENDTO.equals(action)) {
-            startedByExternalIntent = true;
-
             /*
              * Someone has clicked a mailto: link. The address is in the URI.
              */
@@ -928,21 +930,21 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             }
 
             /*
-             * Note: According to the documenation ACTION_VIEW and ACTION_SENDTO don't accept
+             * Note: According to the documentation ACTION_VIEW and ACTION_SENDTO don't accept
              * EXTRA_* parameters.
              * And previously we didn't process these EXTRAs. But it looks like nobody bothers to
              * read the official documentation and just copies wrong sample code that happens to
              * work with the AOSP Email application. And because even big players get this wrong,
-             * we're now finally giving in and read the EXTRAs for ACTION_SENDTO (below).
+             * we're now finally giving in and read the EXTRAs for those actions (below).
              */
         }
 
         if (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) ||
-                Intent.ACTION_SENDTO.equals(action)) {
+                Intent.ACTION_SENDTO.equals(action) || Intent.ACTION_VIEW.equals(action)) {
             startedByExternalIntent = true;
 
             /*
-             * Note: Here we allow a slight deviation from the documentated behavior.
+             * Note: Here we allow a slight deviation from the documented behavior.
              * EXTRA_TEXT is used as message body (if available) regardless of the MIME
              * type of the intent. In addition one or multiple attachments can be added
              * using EXTRA_STREAM.
@@ -1171,9 +1173,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         // So compute the visibility of the "Add Cc/Bcc" menu item again.
         computeAddCcBccVisibility();
 
-        showOrHideQuotedText(
-                (QuotedTextMode) savedInstanceState.getSerializable(STATE_KEY_QUOTED_TEXT_MODE));
-
         mQuotedHtmlContent =
                 (InsertableHtmlContent) savedInstanceState.getSerializable(STATE_KEY_HTML_QUOTE);
         if (mQuotedHtmlContent != null && mQuotedHtmlContent.getQuotedContent() != null) {
@@ -1190,6 +1189,9 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mForcePlainText = savedInstanceState.getBoolean(STATE_KEY_FORCE_PLAIN_TEXT);
         mQuotedTextFormat = (SimpleMessageFormat) savedInstanceState.getSerializable(
                 STATE_KEY_QUOTED_TEXT_FORMAT);
+
+        showOrHideQuotedText(
+                (QuotedTextMode) savedInstanceState.getSerializable(STATE_KEY_QUOTED_TEXT_MODE));
 
         initializeCrypto();
         updateFrom();
@@ -1986,6 +1988,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             Toast.makeText(this, R.string.attachment_encryption_unsupported, Toast.LENGTH_LONG).show();
         }
         Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         i.addCategory(Intent.CATEGORY_OPENABLE);
         i.setType(mime_type);
         mIgnoreOnPause = true;
@@ -2178,7 +2181,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         }
         switch (requestCode) {
         case ACTIVITY_REQUEST_PICK_ATTACHMENT:
-            addAttachment(data.getData());
+            addAttachmentsFromResultIntent(data);
             mDraftNeedsSaving = true;
             break;
         case CONTACT_PICKER_TO:
@@ -2236,6 +2239,27 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 addAddress(mBccView, new Address(emailAddr, ""));
             }
             break;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void addAttachmentsFromResultIntent(Intent data) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            ClipData clipData = data.getClipData();
+            if (clipData != null) {
+                for (int i = 0, end = clipData.getItemCount(); i < end; i++) {
+                    Uri uri = clipData.getItemAt(i).getUri();
+                    if (uri != null) {
+                        addAttachment(uri);
+                    }
+                }
+                return;
+            }
+        }
+
+        Uri uri = data.getData();
+        if (uri != null) {
+            addAttachment(uri);
         }
     }
 
@@ -2753,12 +2777,9 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         if (message.getMessageId() != null && message.getMessageId().length() > 0) {
             mInReplyTo = message.getMessageId();
 
-            if (message.getReferences() != null && message.getReferences().length > 0) {
-                StringBuilder buffy = new StringBuilder();
-                for (int i = 0; i < message.getReferences().length; i++)
-                    buffy.append(message.getReferences()[i]);
-
-                mReferences = buffy.toString() + " " + mInReplyTo;
+            String[] refs = message.getReferences();
+            if (refs != null && refs.length > 0) {
+                mReferences = TextUtils.join("", refs) + " " + mInReplyTo;
             } else {
                 mReferences = mInReplyTo;
             }
@@ -2802,7 +2823,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         if (mAction == Action.REPLY_ALL) {
             if (message.getReplyTo().length > 0) {
                 for (Address address : message.getFrom()) {
-                    if (!mAccount.isAnIdentity(address)) {
+                    if (!mAccount.isAnIdentity(address) && !Utility.arrayContains(replyToAddresses, address)) {
                         addAddress(mToView, address);
                     }
                 }
@@ -3703,12 +3724,20 @@ public class MessageCompose extends K9Activity implements OnClickListener,
      */
     private String quoteOriginalTextMessage(final Message originalMessage, final String messageBody, final QuoteStyle quoteStyle) throws MessagingException {
         String body = messageBody == null ? "" : messageBody;
+        String sentDate = getSentDateText(originalMessage);
         if (quoteStyle == QuoteStyle.PREFIX) {
             StringBuilder quotedText = new StringBuilder(body.length() + QUOTE_BUFFER_LENGTH);
-            quotedText.append(String.format(
-                                  getString(R.string.message_compose_reply_header_fmt) + "\r\n",
-                                  Address.toString(originalMessage.getFrom()))
-                             );
+            if (sentDate.length() != 0) {
+                quotedText.append(String.format(
+                        getString(R.string.message_compose_reply_header_fmt_with_date) + "\r\n",
+                        sentDate,
+                        Address.toString(originalMessage.getFrom())));
+            } else {
+                quotedText.append(String.format(
+                                      getString(R.string.message_compose_reply_header_fmt) + "\r\n",
+                                      Address.toString(originalMessage.getFrom()))
+                                 );
+            }
 
             final String prefix = mAccount.getQuotePrefix();
             final String wrappedText = Utility.wrap(body, REPLY_WRAP_LINE_WIDTH - prefix.length());
@@ -3726,8 +3755,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             if (originalMessage.getFrom() != null && Address.toString(originalMessage.getFrom()).length() != 0) {
                 quotedText.append(getString(R.string.message_compose_quote_header_from)).append(" ").append(Address.toString(originalMessage.getFrom())).append("\r\n");
             }
-            if (originalMessage.getSentDate() != null) {
-                quotedText.append(getString(R.string.message_compose_quote_header_send_date)).append(" ").append(originalMessage.getSentDate()).append("\r\n");
+            if (sentDate.length() != 0) {
+                quotedText.append(getString(R.string.message_compose_quote_header_send_date)).append(" ").append(sentDate).append("\r\n");
             }
             if (originalMessage.getRecipients(RecipientType.TO) != null && originalMessage.getRecipients(RecipientType.TO).length != 0) {
                 quotedText.append(getString(R.string.message_compose_quote_header_to)).append(" ").append(Address.toString(originalMessage.getRecipients(RecipientType.TO))).append("\r\n");
@@ -3760,13 +3789,22 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private InsertableHtmlContent quoteOriginalHtmlMessage(final Message originalMessage, final String messageBody, final QuoteStyle quoteStyle) throws MessagingException {
         InsertableHtmlContent insertable = findInsertionPoints(messageBody);
 
+        String sentDate = getSentDateText(originalMessage);
         if (quoteStyle == QuoteStyle.PREFIX) {
             StringBuilder header = new StringBuilder(QUOTE_BUFFER_LENGTH);
             header.append("<div class=\"gmail_quote\">");
-            header.append(HtmlConverter.textToHtmlFragment(String.format(
-                              getString(R.string.message_compose_reply_header_fmt),
-                              Address.toString(originalMessage.getFrom()))
-                                                          ));
+            if (sentDate.length() != 0) {
+                header.append(HtmlConverter.textToHtmlFragment(String.format(
+                        getString(R.string.message_compose_reply_header_fmt_with_date),
+                        sentDate,
+                        Address.toString(originalMessage.getFrom()))
+                                                    ));
+            } else {
+                header.append(HtmlConverter.textToHtmlFragment(String.format(
+                                  getString(R.string.message_compose_reply_header_fmt),
+                                  Address.toString(originalMessage.getFrom()))
+                                                              ));
+            }
             header.append("<blockquote class=\"gmail_quote\" " +
                           "style=\"margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;\">\r\n");
 
@@ -3779,29 +3817,29 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             StringBuilder header = new StringBuilder();
             header.append("<div style='font-size:10.0pt;font-family:\"Tahoma\",\"sans-serif\";padding:3.0pt 0in 0in 0in'>\r\n");
             header.append("<hr style='border:none;border-top:solid #E1E1E1 1.0pt'>\r\n"); // This gets converted into a horizontal line during html to text conversion.
-            if (mSourceMessage.getFrom() != null && Address.toString(mSourceMessage.getFrom()).length() != 0) {
+            if (originalMessage.getFrom() != null && Address.toString(originalMessage.getFrom()).length() != 0) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_from)).append("</b> ")
-                    .append(HtmlConverter.textToHtmlFragment(Address.toString(mSourceMessage.getFrom())))
+                    .append(HtmlConverter.textToHtmlFragment(Address.toString(originalMessage.getFrom())))
                     .append("<br>\r\n");
             }
-            if (mSourceMessage.getSentDate() != null) {
+            if (sentDate.length() != 0) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_send_date)).append("</b> ")
-                    .append(mSourceMessage.getSentDate())
+                    .append(sentDate)
                     .append("<br>\r\n");
             }
-            if (mSourceMessage.getRecipients(RecipientType.TO) != null && mSourceMessage.getRecipients(RecipientType.TO).length != 0) {
+            if (originalMessage.getRecipients(RecipientType.TO) != null && originalMessage.getRecipients(RecipientType.TO).length != 0) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_to)).append("</b> ")
-                    .append(HtmlConverter.textToHtmlFragment(Address.toString(mSourceMessage.getRecipients(RecipientType.TO))))
+                    .append(HtmlConverter.textToHtmlFragment(Address.toString(originalMessage.getRecipients(RecipientType.TO))))
                     .append("<br>\r\n");
             }
-            if (mSourceMessage.getRecipients(RecipientType.CC) != null && mSourceMessage.getRecipients(RecipientType.CC).length != 0) {
+            if (originalMessage.getRecipients(RecipientType.CC) != null && originalMessage.getRecipients(RecipientType.CC).length != 0) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_cc)).append("</b> ")
-                    .append(HtmlConverter.textToHtmlFragment(Address.toString(mSourceMessage.getRecipients(RecipientType.CC))))
+                    .append(HtmlConverter.textToHtmlFragment(Address.toString(originalMessage.getRecipients(RecipientType.CC))))
                     .append("<br>\r\n");
             }
-            if (mSourceMessage.getSubject() != null) {
+            if (originalMessage.getSubject() != null) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_subject)).append("</b> ")
-                    .append(HtmlConverter.textToHtmlFragment(mSourceMessage.getSubject()))
+                    .append(HtmlConverter.textToHtmlFragment(originalMessage.getSubject()))
                     .append("<br>\r\n");
             }
             header.append("</div>\r\n");
@@ -3988,6 +4026,26 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private boolean includeQuotedText() {
         return (mQuotedTextMode == QuotedTextMode.SHOW);
+    }
+
+    /**
+     * Extract the date from a message and convert it into a locale-specific
+     * date string suitable for use in a header for a quoted message.
+     *
+     * @param message
+     * @return A string with the formatted date/time
+     */
+    private String getSentDateText(Message message) {
+        try {
+            final int dateStyle = DateFormat.LONG;
+            final int timeStyle = DateFormat.LONG;
+            Date date = message.getSentDate();
+            Locale locale = getResources().getConfiguration().locale;
+            return DateFormat.getDateTimeInstance(dateStyle, timeStyle, locale)
+                    .format(date);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /**

@@ -1517,7 +1517,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
             int imported = mImportResults.importedAccounts.size();
             String accounts = activity.getResources().getQuantityString(
-                                  R.plurals.settings_import_success, imported, imported);
+                                  R.plurals.settings_import_accounts, imported, imported);
             return activity.getString(R.string.settings_import_success, accounts, mFilename);
         }
 
@@ -1735,7 +1735,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             }
 
             String description = account.getDescription();
-            if (description == null || description.length() == 0) {
+            if (description == null || description.isEmpty()) {
                 description = account.getEmail();
             }
 

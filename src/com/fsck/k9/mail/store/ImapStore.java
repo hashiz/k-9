@@ -531,7 +531,7 @@ public class ImapStore extends Store {
                 return allFolders;
             } else {
                 List<Folder> resultFolders = new LinkedList<Folder>();
-                HashSet<String> subscribedFolderNames = new HashSet<String>();
+                Set<String> subscribedFolderNames = new HashSet<String>();
                 List <? extends Folder > subscribedFolders = listFolders(connection, true);
                 for (Folder subscribedFolder : subscribedFolders) {
                     subscribedFolderNames.add(subscribedFolder.getName());
@@ -1476,11 +1476,10 @@ public class ImapStore extends Store {
             checkOpen(); //only need READ access
             List<String> uids = new ArrayList<String>(messages.length);
             HashMap<String, Message> messageMap = new HashMap<String, Message>();
-            for (int i = 0, count = messages.length; i < count; i++) {
-
-                String uid = messages[i].getUid();
+            for (Message msg : messages) {
+                String uid = msg.getUid();
                 uids.add(uid);
-                messageMap.put(uid, messages[i]);
+                messageMap.put(uid, msg);
             }
 
             /*
@@ -1489,7 +1488,7 @@ public class ImapStore extends Store {
              * Envelope - UID FETCH ([FLAGS] INTERNALDATE UID RFC822.SIZE FLAGS BODY.PEEK[HEADER.FIELDS (date subject from content-type to cc)])
              *
              */
-            LinkedHashSet<String> fetchFields = new LinkedHashSet<String>();
+            Set<String> fetchFields = new LinkedHashSet<String>();
             fetchFields.add("UID");
             if (fp.contains(FetchProfile.Item.FLAGS)) {
                 fetchFields.add("FLAGS");
@@ -2978,6 +2977,7 @@ public class ImapStore extends Store {
                     if (K9.DEBUG)
                         Log.i(K9.LOG_TAG, "Pusher starting for " + getLogId());
 
+                    long lastUidNext = -1L;
                     while (!stop.get()) {
                         try {
                             long oldUidNext = -1L;
@@ -2990,6 +2990,18 @@ public class ImapStore extends Store {
                             } catch (Exception e) {
                                 Log.e(K9.LOG_TAG, "Unable to get oldUidNext for " + getLogId(), e);
                             }
+
+                            /*
+                             * This makes sure 'oldUidNext' is never smaller than 'UIDNEXT' from
+                             * the last loop iteration. This way we avoid looping endlessly causing
+                             * the battery to drain.
+                             *
+                             * See issue 4907
+                             */
+                            if (oldUidNext < lastUidNext) {
+                                oldUidNext = lastUidNext;
+                            }
+
                             ImapConnection oldConnection = mConnection;
                             internalOpen(OPEN_MODE_RO);
                             ImapConnection conn = mConnection;
@@ -3041,6 +3053,8 @@ public class ImapStore extends Store {
                             if (startUid < 1) {
                                 startUid = 1;
                             }
+
+                            lastUidNext = newUidNext;
                             if (newUidNext > startUid) {
 
                                 if (K9.DEBUG)
