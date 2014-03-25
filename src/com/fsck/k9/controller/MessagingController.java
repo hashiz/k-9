@@ -2628,7 +2628,7 @@ public class MessagingController implements Runnable {
         }
     }
 
-    public static void notifyUserIfCertificateProblem(Context context, Exception e,
+    void notifyUserIfCertificateProblem(Context context, Exception e,
             Account account, boolean incoming) {
         if (!(e instanceof CertificateValidationException)) {
             return;
@@ -2692,9 +2692,8 @@ public class MessagingController implements Runnable {
             CharArrayWriter baos = new CharArrayWriter(t.getStackTrace().length * 10);
             PrintWriter ps = new PrintWriter(baos);
             try {
-                Application context = K9.app;
-                PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
-                        context.getPackageName(), 0);
+                PackageInfo packageInfo = mApplication.getPackageManager().getPackageInfo(
+                        mApplication.getPackageName(), 0);
                 ps.format("K9-Mail version: %s\r\n", packageInfo.versionName);
             } catch (Exception e) {
                 // ignore
@@ -3600,6 +3599,7 @@ public class MessagingController implements Runnable {
                         }
 
                         notifyUserIfCertificateProblem(mApplication, e, account, false);
+                        addErrorMessage(account, "Failed to send message", e);
                         message.setFlag(Flag.X_SEND_FAILED, true);
                         Log.e(K9.LOG_TAG, "Failed to send message", e);
                         for (MessagingListener l : getListeners()) {
@@ -3612,6 +3612,7 @@ public class MessagingController implements Runnable {
                     for (MessagingListener l : getListeners()) {
                         l.synchronizeMailboxFailed(account, localFolder.getName(), getRootCauseMessage(e));
                     }
+                    addErrorMessage(account, "Failed to fetch message for sending", e);
                     lastFailure = e;
                 }
             }
@@ -5044,7 +5045,7 @@ public class MessagingController implements Runnable {
      * @param ringAndVibrate
      *          {@code true}, if ringtone/vibration are allowed. {@code false}, otherwise.
      */
-    private static void configureNotification(NotificationCompat.Builder builder, String ringtone,
+    private void configureNotification(NotificationCompat.Builder builder, String ringtone,
             long[] vibrationPattern, Integer ledColor, int ledSpeed, boolean ringAndVibrate) {
 
         // if it's quiet time, then we shouldn't be ringing, buzzing or flashing

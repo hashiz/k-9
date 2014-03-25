@@ -46,6 +46,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
@@ -66,7 +67,6 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.R;
 import com.fsck.k9.controller.MessageRetrievalListener;
-import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.StringUtils;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.helper.power.TracingPowerManager;
@@ -127,7 +127,6 @@ public class ImapStore extends Store {
     private static final String CAPABILITY_AUTH_CRAM_MD5 = "AUTH=CRAM-MD5";
     private static final String CAPABILITY_AUTH_PLAIN = "AUTH=PLAIN";
     private static final String CAPABILITY_LOGINDISABLED = "LOGINDISABLED";
-    private static final String CAPABILITY_LITERAL_PLUS = "LITERAL+";
     private static final String COMMAND_IDLE = "IDLE";
     private static final String CAPABILITY_NAMESPACE = "NAMESPACE";
     private static final String COMMAND_NAMESPACE = "NAMESPACE";
@@ -2655,29 +2654,23 @@ public class ImapStore extends Store {
         }
 
         protected void login() throws IOException, MessagingException {
-            boolean hasLiteralPlus = hasCapability(CAPABILITY_LITERAL_PLUS);
-            String tag;
-                byte[] username = mSettings.getUsername().getBytes();
-                byte[] password = mSettings.getPassword().getBytes();
-                tag = sendCommand(String.format(Locale.US, "LOGIN {%d%s}",
-                        username.length, hasLiteralPlus ? "+" : ""), true);
-                if (!hasLiteralPlus) {
-                    readContinuationResponse(tag);
-                }
-                mOut.write(username);
-                mOut.write(String.format(Locale.US, " {%d%s}\r\n", password.length,
-                        hasLiteralPlus ? "+" : "").getBytes());
-                if (!hasLiteralPlus) {
-                    mOut.flush();
-                    readContinuationResponse(tag);
-                }
-                mOut.write(password);
-                mOut.write('\r');
-                mOut.write('\n');
-                mOut.flush();
+            /*
+             * Use quoted strings which permit spaces and quotes. (Using IMAP
+             * string literals would be better, but some servers are broken
+             * and don't parse them correctly.)
+             */
+
+            // escape double-quotes and backslash characters with a backslash
+            Pattern p = Pattern.compile("[\\\\\"]");
+            String replacement = "\\\\$0";
+            String username = p.matcher(mSettings.getUsername()).replaceAll(
+                    replacement);
+            String password = p.matcher(mSettings.getPassword()).replaceAll(
+                    replacement);
             try {
-                receiveCapabilities(readStatusResponse(tag, "LOGIN", null));
-            } catch (MessagingException e) {
+                receiveCapabilities(executeSimpleCommand(
+                        String.format("LOGIN \"%s\" \"%s\"", username, password), true));
+            } catch (ImapException e) {
                 throw new AuthenticationFailedException(e.getMessage());
             }
         }
@@ -3139,7 +3132,6 @@ public class ImapStore extends Store {
                             if (stop.get()) {
                                 Log.i(K9.LOG_TAG, "Got exception while idling, but stop is set for " + getLogId());
                             } else {
-                                MessagingController.notifyUserIfCertificateProblem(K9.app, e, getAccount(), true);
                                 receiver.pushError("Push error for " + getName(), e);
                                 Log.e(K9.LOG_TAG, "Got exception while idling for " + getLogId(), e);
                                 int delayTimeInt = delayTime.get();
