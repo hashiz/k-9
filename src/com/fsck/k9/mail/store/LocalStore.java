@@ -223,7 +223,7 @@ public class LocalStore extends Store implements Serializable {
         }
 
         private void upgradeDatabase(final SQLiteDatabase db) {
-            Log.i(K9.LOG_TAG, String.format("Upgrading database from version %d to version %d",
+            Log.i(K9.LOG_TAG, String.format(Locale.US, "Upgrading database from version %d to version %d",
                                             db.getVersion(), DB_VERSION));
 
             AttachmentProvider.clear(mApplication);
@@ -1068,7 +1068,7 @@ public class LocalStore extends Store implements Serializable {
                     return null;
                 }
             });
-        } catch (UnsupportedEncodingException usee) {
+        } catch (UnsupportedEncodingException uee) {
             throw new Error("Aparently UTF-8 has been lost to the annals of history.");
         }
     }
@@ -1968,14 +1968,14 @@ public class LocalStore extends Store implements Serializable {
                                                                            type,
                                                                            name));
                                                 bp.setHeader(MimeHeader.HEADER_CONTENT_DISPOSITION,
-                                                             String.format("%s;\r\n filename=\"%s\";\r\n size=%d",
+                                                             String.format(Locale.US, "%s;\r\n filename=\"%s\";\r\n size=%d",
                                                                            contentDisposition,
                                                                            name, // TODO: Should use encoded word defined in RFC 2231.
                                                                            size));
                                             } else {
                                                 bp.setHeader(MimeHeader.HEADER_CONTENT_TYPE, type);
                                                 bp.setHeader(MimeHeader.HEADER_CONTENT_DISPOSITION,
-                                                        String.format("%s;\r\n size=%d",
+                                                        String.format(Locale.US, "%s;\r\n size=%d",
                                                                       contentDisposition,
                                                                       size));
                                             }
@@ -2807,10 +2807,10 @@ public class LocalStore extends Store implements Serializable {
                                  */
                                 String disposition = attachment.getDisposition();
                                 if (disposition != null) {
-                                    String s = MimeUtility.getHeaderParameter(disposition, "size");
-                                    if (s != null) {
+                                    String sizeParam = MimeUtility.getHeaderParameter(disposition, "size");
+                                    if (sizeParam != null) {
                                         try {
-                                            size = Integer.parseInt(s);
+                                            size = Integer.parseInt(sizeParam);
                                         } catch (NumberFormatException e) { /* Ignore */ }
                                     }
                                 }

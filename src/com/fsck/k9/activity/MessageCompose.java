@@ -1565,7 +1565,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
              *  title*2*=%2A%2A%2Afun%2A%2A%2A%20
              *  title*3="isn't it!"
              */
-            bp.addHeader(MimeHeader.HEADER_CONTENT_DISPOSITION, String.format(
+            bp.addHeader(MimeHeader.HEADER_CONTENT_DISPOSITION, String.format(Locale.US,
                              "attachment;\r\n filename=\"%s\";\r\n size=%d",
                              attachment.name, attachment.size));
 
@@ -1737,28 +1737,28 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
             if (K9.DEBUG)
                 Log.d(K9.LOG_TAG, "Got a saved legacy identity: " + identityString);
-            StringTokenizer tokens = new StringTokenizer(identityString, ":", false);
+            StringTokenizer tokenizer = new StringTokenizer(identityString, ":", false);
 
             // First item is the body length. We use this to separate the composed reply from the quoted text.
-            if (tokens.hasMoreTokens()) {
-                String bodyLengthS = Utility.base64Decode(tokens.nextToken());
+            if (tokenizer.hasMoreTokens()) {
+                String bodyLengthS = Utility.base64Decode(tokenizer.nextToken());
                 try {
                     identity.put(IdentityField.LENGTH, Integer.valueOf(bodyLengthS).toString());
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Unable to parse bodyLength '" + bodyLengthS + "'");
                 }
             }
-            if (tokens.hasMoreTokens()) {
-                identity.put(IdentityField.SIGNATURE, Utility.base64Decode(tokens.nextToken()));
+            if (tokenizer.hasMoreTokens()) {
+                identity.put(IdentityField.SIGNATURE, Utility.base64Decode(tokenizer.nextToken()));
             }
-            if (tokens.hasMoreTokens()) {
-                identity.put(IdentityField.NAME, Utility.base64Decode(tokens.nextToken()));
+            if (tokenizer.hasMoreTokens()) {
+                identity.put(IdentityField.NAME, Utility.base64Decode(tokenizer.nextToken()));
             }
-            if (tokens.hasMoreTokens()) {
-                identity.put(IdentityField.EMAIL, Utility.base64Decode(tokens.nextToken()));
+            if (tokenizer.hasMoreTokens()) {
+                identity.put(IdentityField.EMAIL, Utility.base64Decode(tokenizer.nextToken()));
             }
-            if (tokens.hasMoreTokens()) {
-                identity.put(IdentityField.QUOTED_TEXT_MODE, Utility.base64Decode(tokens.nextToken()));
+            if (tokenizer.hasMoreTokens()) {
+                identity.put(IdentityField.QUOTED_TEXT_MODE, Utility.base64Decode(tokenizer.nextToken()));
             }
         }
 
