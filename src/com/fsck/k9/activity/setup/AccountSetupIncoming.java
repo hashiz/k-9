@@ -262,7 +262,8 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
             mSecurityTypeView.setAdapter(securityTypesAdapter);
 
             // Select currently configured security type
-            mSecurityTypeView.setSelection(settings.connectionSecurity.ordinal(), false);
+            int index = securityTypesAdapter.getPosition(settings.connectionSecurity);
+            mSecurityTypeView.setSelection(index, false);
 
             /*
              * Updates the port when the user changes the security type. This allows
